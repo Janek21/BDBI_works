@@ -1,0 +1,148 @@
+---
+title: |
+  <center> R script Assignment 1</center>
+  <center> Maximum Likelyhood Estimation </center>
+  
+author: "Jan Izquierdo, Eloi Vilella"
+date: "2023-10-20"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 1
+
+#### ML estimation of a one-parameter distribution. Let X be a random variable with probability density f(x\|B)=Be-Bx+1 with x\>1/B. We consider a random sample of n observations of this distribution.
+
+#### *1.a)*Write down the likelihood function for a sample of n observations of this distribution
+
+$L(B|x)=∏^n_{i=1}B*e^{-Bx+1}$
+
+#### *1.b)* Obtain the log-likelihood function
+
+We solve using logarithmic properties
+
+
+
+Setting libraries and some variables
+
+```{r setting the scene}
+library("ggplot2")
+db<-read.table("./Assignment_data/A1_MLE.dat")
+m<-mean(db$V1)
+sd1<-sd(db$V1)
+variance<-var(db$V1)
+```
+
+#### ***1.e)*** Download the file Sample.dat, which contains sample of observations from this probability distribution.Determine the sample size and calculate the value of the ML estimator for this sample.
+
+.
+
+```{r, echo=TRUE}
+n <- length(db$V1)
+x <- db$V1
+b <- seq(min(db$V1),max(db$V1),by=0.01)
+L <- (b^n)*(prod(x)^(b-1))
+cat("The sample size is", n)
+```
+
+This method does not work as the sample size (n) is too big, it approaches infinity. We will calculate it this other way.
+
+```{r}
+#n/sum(x) x is all values
+MLE<-100000/sum(db$V1) 
+#MLE=~sd1/m
+cat("MLE is", MLE)
+```
+
+#### ***1.f)*** Plot the log-likelihood function, and assess graphically if your ML estimate coincides with the maximum of this function.
+
+.
+
+```{r, echo=TRUE}
+log_likelihood<-function(m){
+  log_data<-dnorm(db$V1, mean=m, sd=sd1, log=T)
+  log_likelyhood<-sum(log_data)
+  return(log_likelyhood)
+}
+
+beta<-seq(min(db$V1), max(db$V1), by=0.1)#min->max or 0.1->max
+log_likelihood_values <- sapply(beta, log_likelihood)
+
+plot_data <- data.frame(Beta = beta, LogLikelihood = log_likelihood_values)
+
+ggplot(plot_data, aes(x=beta, y=log_likelihood_values))+
+          geom_line()+
+          geom_vline(xintercept =100000/sum(db$V1), color = "blue", linetype = "dashed")+
+          xlab("Beta")+
+          ylab("Logarithmic likelihood")
+```
+
+The blue line represents where the MLE stands respect the graph
+
+#### ***1.j)*** Calculate a 95% confidence interval for parameter B, using the dataset that you have downloaded.
+
+```{r, echo=T}
+#n is sample size, MLE is maximum likelihood estimator
+error <- qt(0.975, df=n-1)*sd1/(2*sqrt(n))
+lower_bound <- MLE - error
+upper_bound <- MLE + error
+cat("Confidence interval of 95% for parameter B is","[", lower_bound, ",", upper_bound, "]")
+
+```
+
+#### ***1.l)*** Make a histogram of the data, using function hist, using the argument freq=FALSE. Overplot the histogram with the estimated probability density f(x\|B), using the maximum likelihood estimate. What do you observe?.
+
+.
+
+```{r, echo=T}
+Prob_density<- function(a, beta) {
+  beta * exp(-beta * a + 1)
+}
+hist(db$V1, freq=F, main = "Histogram Estimated Probability Density", xlab="Population")
+lines(density(db$V1), col="green", lwd=2)
+curve(Prob_density(x, MLE), col = "blue", lwd = 4, add = TRUE)
+
+```
+
+## Exercise 2
+
+Setting libraries and variables
+
+```{r}
+o<-1#placeholder
+AA<-o^2
+Aa<-2*o*(1-o)
+aa<-(1-o)^2
+#n<-sample size
+#z<-individuals AA
+#x<-individuals Aa
+#y<-individuals aa
+```
+
+#### ***2.c)*** Record the form of MLE for o.
+
+.
+
+```{r}
+log_likelihood<-function(o, z ,x ,y){
+  n<-z+x+y
+  AA<-o^2
+  Aa<-2*o*(1-o)
+  aa<-(1-o)^2
+  log_lik<-log(factorial(n))-(log(factorial(z))+log(factorial(x))+log(factorial(y)))+
+    z*log(AA)+x*log(Aa)+y*log(aa)
+  #z*log(AA)=total individuals* prob of an individual=individuals in sample
+  return(-log_lik)#negative, as optimize gets minimum, we want maximum, so we use the negative of the function
+}
+z<-20#example data
+x<-50#example data
+y<-10#example data
+mle_opt<-optimize(log_likelihood, interval =c(0,1), z, x, y)
+mle_o<-mle_opt$minimum
+cat("MLE for o is", mle_o)
+```
