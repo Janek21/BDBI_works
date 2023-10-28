@@ -1,0 +1,302 @@
+---
+title: |
+  <center> Assignment 2 </center>
+  <center> Likelihood Ratio Test </center>
+author: "Jan Izquierdo, Eloi Vilella"
+date: "2023-10-25"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("HardyWeinberg")
+library("readxl")
+```
+
+Setting libraries
+
+```{r, echo=T, results='hide', message=FALSE}
+#install.packages("HardyWeinberg")
+library("HardyWeinberg")
+#install.packages("readxl")
+library("readxl")
+```
+
+## Exercise 1
+
+#### Likelihood ratio test for Hardy-Weinberg equilibrium. In a genetic association study, the genotypes of a single nucleotide polymorphism have been determined for a sample of individuals. The genotype data file snp.txt contains the genotyping results.
+
+.
+
+Setting up variables
+
+```{r}
+db<-read.table("./Assignment_data/A2-LRT.txt")
+n<-length(db$V1)
+```
+
+#### *1.a)*Load the data in the R environment, and make a table of the different genotypes. Report the table. What is the sample size of the study?
+
+.
+
+```{r}
+gen_table<-table(db$V1)
+```
+
+```{r, echo=F}
+cat("Sample size is:", n)
+cat("The different genotypes are")
+print(gen_table)
+```
+
+#### *1.b)* How many alleles does this SNP have? How many genotypes could it theoretically have? Estimate all relative genotype frequencies by maximum likelihood (ML). Report the values of the ML estimators.
+
+.
+
+```{r, echo=F}
+cat("2 alleles A and T, 3 genotypes TA, AT, TT")
+```
+
+```{r, echo=T}
+#frequency=num(TT or AT)/total
+gen_table/n
+```
+
+#### *1.c)* Count the number of alleles of each type in the sample. Estimate the relative allele frequencies by ML. Report the values of the ML estimators.
+
+.
+
+```{r}
+allele_num<-table(unlist(strsplit(as.character(db$V1),"")))
+#frequency=num(A or B)/total alleles
+#total alleles =2n
+al_freq<-allele_num/(2*n)
+```
+
+```{r, echo=F}
+cat("Number of alleles of each type in the sample"); print(allele_num)
+cat("Relative allele frequencies"); print(al_freq)
+```
+
+#### *1.d)* Which allele is the minor (least common) allele?
+
+.
+
+```{r,echo=F}
+cat("The least common allele is A with 55 repetitions.")
+```
+
+#### *1.e)* Do a likelihood ratio test (LRT) for Hardy-Weinberg equilibrium using the HWLratio function of the R-package HardyWeinberg. Report the likelihood ratio statistic and the p-value.
+
+.
+
+```{r}
+#for HWLratio to work we need 3 genotypes on the table, we had AT and TT, we add AA
+gen_table["AA"]<-0
+print(HWLratio(gen_table))
+```
+
+#### *1.f)* State your conclusion of the LRT.
+
+.
+
+```{r, echo=F}
+cat("It is very unlikely thet these results are due to random chance, as lambda and the p-value have 
+low values. We can state that the alleles are not associated with each other.")
+```
+
+#### *1.g)* State the distribution the LR statistic for this problem.
+
+.
+
+```{r}
+#the data is skewed to the right, we check if its is chi-square
+set.seed(1)
+obs<-gen_table
+total<-n
+A_freq<- (2*obs["AA"]+obs["AT"]) / (2*total)
+expected<-c(AA=A_freq^2 * total, 
+            AT=2 * A_freq * (1-A_freq)*total, 
+            TT=(1-A_freq)^2 * total)
+chi_sq<-sum((obs-expected)^2 / expected)
+
+p_value<-1-pchisq(chi_sq, df=1)
+
+# Assuming 'observed' and 'expected' are vectors representing counts
+
+# Combine observed and expected counts into a matrix
+combined_data <- cbind(obs, expected)
+
+# Barplot visualization
+barplot(combined_data, beside = TRUE, col = c("blue", "red"), 
+        names.arg = c("Observed", "Expected"), legend.text = c("AA", "AT", "TT"))
+
+
+
+```
+
+```{r, echo=F}
+cat("The observed distribution aligns closely with the expected chi-square distribution. 
+Therefore, there is evidence to suggest that the observed data follows a chi-square distribution,
+supporting the hypothesis of a good fit.")
+```
+
+#### *1.h)* Calculate the p-value "by hand" using the value observed for the LR statistic and its distribution. Show your computations. Do you obtain the same result as the HWLratio function?
+
+.
+
+```{r}
+obs_LR<-9.591049
+df<-2-1
+p_value <- 1 - pchisq(obs_LR, df)
+```
+
+```{r, echo=F}
+cat("The p-value of our distribution is", p_value, "which is the same as the result of
+the HWLratio function")
+```
+
+#### *1.i)* Calculate the expected genotype counts under the assumption of Hardy-Weinberg equilibrium. Compare them with the observed counts. What do you observe?
+
+.
+
+```{r}
+total_alleles <- 2 * sum(gen_table) 
+alleles <- unlist(strsplit(db$V1, ""))
+A_count <- sum(alleles == "A")
+T_count <- total_alleles - A_count
+freq_A <- A_count / total_alleles
+freq_T <- T_count / total_alleles
+expected_AA <- freq_A^2
+expected_AT <- 2 * freq_A * freq_T
+expected_TT <- freq_T^2
+#calculate the expected genotypes
+expected <- c(
+  AA = expected_AA * total_alleles/2,
+  AT = expected_AT * total_alleles/2,
+  TT = expected_TT * total_alleles/2
+)
+
+```
+
+```{r,echo=F}
+cat("Observed:\n");print(gen_table)
+cat("Expected:\n");print(expected)
+cat("Comparing both sets, it appears that the expected values closely resemble the observed values")
+
+```
+
+## Exercise 2
+
+#### Comparison of regression models. The outcome or response variable is seize and the explanatory variables or predictors are trt, base and age. Subject contains an ID for every individual. The dataset seizures_visit4.xls contains the measures performed at visit 4 in a clinical trial. The Clinical trial was conducted in m = 59 subjects suffering from simple or partial seizures
+
+-   Patients were randomized to the anti-epileptic drug progabide or placebo (0= Placebo, 1=Progabide; variable trt).
+
+-   A baseline measure of each subject's propensity for seizures was recorded, namely, the number of seizures suffered in the 8 weeks leading up to the start of the study (variable base).
+
+-   Each subject's age at the start of assigned treatment was also recorded (variable age).
+
+-   After initiation of assigned treatment, the number of seizures experienced by each subject in n = 4 consecutive two-week periods was recorded, so that the response is a count measured at week 8 of follow up (variable seize).
+
+#### The variable seize is used as the response variable in a multiple regression with the available variables as predictors.
+
+#### *2.a)* Load the data into the R environment. Do a summary of the data set.
+
+.
+
+```{r}
+Edata<-read_excel("./Assignment_data/A2.2-LRT.xls", sheet = 1)
+summary(Edata)
+```
+
+#### *2.b)* Fit a full model by the regression of seize on all predictors available in the data set. Report the adjusted R 2 statistic of this model. Which variables are not significant? (use alpha = 0.05).
+
+.
+
+```{r}
+reg_model<-lm(seize~base+trt+ age, Edata)
+r2_model<-summary(reg_model)$adj.r.sq
+res <- summary(reg_model)$coef[,"Pr(>|t|)"] 
+c=0
+for (i in res){c=c+1;if (i<=0.05){significant<-res[c]}}
+
+```
+
+```{r, echo=F}
+cat("The adjusted R² statistic of the model is", r2_model)
+cat("Base is the only significant variable, as it sthe only variable that has a value above 
+the critical value in the model")
+print(significant)
+```
+
+#### *2.c)* Fit a reduced model, eliminating all insignificant predictors from the regression equation in a stepwise fashion (use alpha = 0.05). Report the adjusted R2 statistic of this reduced model. Does this model have a better or worse fit, according to this statistic?
+
+.
+
+```{r}
+red_model<-lm(seize~base, Edata)
+red_R2_model<-summary(red_model)$adj.r.sq
+```
+
+```{r, echo=F}
+cat("The adjusted R² statistic of the reduced model is",red_R2_model)
+cat("The reduced model has a better fit as", red_R2_model,"<", r2_model)
+```
+
+#### *2.d)* Do a likelihood ratio test (F-test) to see whether the full or reduced model fits the data better. Report the F statistic, its reference distribution and the p-value, and state your conclusion.
+
+.
+
+```{r}
+F_test<-var.test(reg_model, red_model)
+F_stat<-F_test[1]
+p_value<-F_test[3]
+
+```
+
+```{r, echo=F}
+cat("F-test between reduced model and full model:\n");print(F_test)
+cat("The F statistic is:\n"); print(F_stat)
+cat("The P-value is:\n"); print(p_value)
+```
+
+#### *2.e)* Do simple linear regressions of seize on the predictors that you eliminated from the model. Do these regressions confirm that the eliminated predictors do not explain seize? State your findings and conclusions.
+
+.
+
+```{r}
+attach(Edata)
+model_pre1 <- lm(seize ~ trt)
+summary(model_pre1)
+
+model_pre2 <- lm(seize ~ base)
+summary(model_pre2)
+
+model_pre3 <- lm(seize ~ age)
+summary(model_pre3)
+```
+.
+
+.
+
+.
+
+Conclusions
+```{r, echo=F}
+cat("These regressions confirm that the eliminated predictors do not explain seize because when we 
+analyse every eliminated predictor independenly we can see that their p-value tells us that
+their affect on seize is probably random, but when we  take 'base' as a predictor,we can observe
+that it is nearly impossible that the effect on seize is random due to its minimum p-value 
+of < 2.2e-16.")
+```
+
+#### *2.f)* Are regression coefficients you found in the different regressions consistent with each other? Comment on your findings.
+
+.
+
+```{r, echo=F}
+cat("The results consistently show the main variable's significance, while trt and age individually lack
+significance. The adjusted R² is", red_R2_model,". The difference in fit between the models is marginal,
+with being", red_R2_model,"lower than", r2_model,"the reduced model has slightly better fit.")
+```
