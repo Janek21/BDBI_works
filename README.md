@@ -5,8 +5,10 @@ This repository is to be used for sharing and working in community in projects a
 ## Github desktop for linux
 
 Make it easier to commit and stuff:
-https://github.com/shiftkey/desktop
+Download .deb of lastest version
+https://github.com/shiftkey/desktop/releases
 or
+
 https://www.linuxcapable.com/how-to-install-github-desktop-on-ubuntu-linux/
 
 ## Instruccions
