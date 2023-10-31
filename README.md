@@ -7,8 +7,7 @@ This repository is to be used for sharing and working in community in projects a
 Make it easier to commit and stuff:
 Download .deb of lastest version
 https://github.com/shiftkey/desktop/releases
-or
-
+and follow instructions
 https://www.linuxcapable.com/how-to-install-github-desktop-on-ubuntu-linux/
 
 ## Instruccions
