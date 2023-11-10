@@ -1,0 +1,357 @@
+---
+title: |
+  <center> Assignment 3 </center>
+  <center> Linear Regression</center>
+author: "Jan Carreras & Jan Izquierdo"
+date: "2023-11-6"
+output: 
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### We consider a data set reporting the daily total of bike counts conducted on the Brooklyn Bridge from 01 April 2017 to 31 October 2017 (Source: NYC Open Data: Bicycle Counts for East River Bridges). The variables included in the dataset are HIGH_T; LOW_T; PRECIP and LABOR_YESNO. The number of bikes (BB_COUNT) is used as response variable in a Poisson regression. Predictors (4 variables) we consider as potentially bearing a relationship with the number of bikes are the high and low temperature (HIGH_T; LOW_T;) the precipitation (PRECIP) and the if day of the week is a working day or not (LABOR_YESNO with values 1 and 0 to indicate yes or no, respectively).
+
+Setting libraries
+```{r, echo=T, results='hide'}
+#install.packages("AER")
+library(readxl)
+library(ggplot2)
+library(AER)
+library(MASS)
+```
+
+#### *1.a)* Read the dataset, you can use instruction attach the dataset for convenient access to the variables in the dataset.
+.
+
+```{r}
+data<-read_excel("./assignment_data/bicyclist_data.xls")
+  n<-nrow(data)
+n
+```
+
+#### *1.b)* Make a barplot of the table of the possible outcomes of the response variable BB_COUNT. Calculate descriptive statistics of response BB_COUNT. Is there, at the exploratory level, evidence that the response does not follow a Poisson distribution?
+.
+
+```{r}
+bb_table <- table(data$BB_COUNT)
+barplot(bb_table, main="BB_count barplot")
+bb_sum<-summary(data$BB_COUNT)
+pois_dis<-rpois(214, mean(data$BB_COUNT))
+pois_table<-table(pois_dis)
+barplot(pois_table, col="red", main="Poisson comparison barplot");barplot(bb_table,col="blue",add=T)
+```
+```{r, echo=F}
+cat("The descriptive statistics of BB_count is\n");print(bb_sum)
+cat("In the BB_count barplot we can see that, the majority of BB_COUNT values have a frequency of 1, with only
+a few occurrences having a frequency of 2.\n")
+cat("In the barplot above we created data in a poisson distribution arrangement(red) and compare it with 
+the distribution of our data(blue), we can see that the distributions are very different so we can
+concludethat BB_count does not follow a Poisson regression\n")
+cat("A feature of the Poisson distribution is that the mean equal to the variance. However, in our scenario,
+the variance significantly exceeds the mean, indicating that our data does not follow the distribution.
+To assess it, we compute the overdispersion parameter for our model.\n")
+```
+```{r}
+model <- glm(BB_COUNT ~ HIGH_T + LOW_T + PRECIP + LABOR_YESNO,data=data, family = poisson(link = "log"))
+# Get the residual deviance and the degrees of freedom
+residual_dev <- model$deviance
+df <- model$df.residual
+
+# Calculate the overdispersion parameter
+overdispersion <- residual_dev/df
+```
+```{r, echo=F}
+cat("The overdispersion parameter is:", overdispersion)
+```
+
+#### *1.c)* Perform Poisson regression of the number of BB_COUNT on HIGH_T, our first model. Report the regression equation. Is there evidence for association, and if so, what kind of association?
+.
+
+```{r}
+mdl_pois_reg <-glm(formula = BB_COUNT ~ HIGH_T, data = data, family = poisson)  
+summary(mdl_pois_reg)
+coefficients <- coef(mdl_pois_reg)
+
+intercept <- coefficients[1]
+pendent <- coefficients[2]
+
+```
+```{r, echo=F}
+cat("Regression equation:\n")
+cat("ln(BB_COUNT) =", intercept, "+", pendent, "* HIGH_T\n")
+cat("BB_COUNT = e^(", intercept, ") * e^(", pendent,"* HIGH_T)\n\n")
+cat("There is proof of a connection; when HIGH_T rises, so does BB_COUNT. According to this equation, a 1-unit
+elevation in HIGH_T leads to a BB_COUNT increase of", pendent,". This demonstrates a positive linear
+correlation between the variables, denoting a positive association. The positive sign of the slope signifies
+that as HIGH_T increases, BB_COUNT also experiences an increase.")
+```
+
+#### *1.d)* Make a scatter plot of BB_COUNT against HIGH_T. Add the fitted regression equation to the scatter plot.
+.
+
+```{r}
+# Step 1: Convert temperature to numeric
+data$HIGH_T <- as.numeric(data$HIGH_T)
+
+# Step 1: Standardize the variables
+#data$BB_COUNT_standardized <- scale(data$BB_COUNT)
+#data$HIGH_T_standardized <- scale(data$HIGH_T)
+
+#Fit the linear regression model with standardized variables
+model <- glm(BB_COUNT ~ HIGH_T, data = data)
+#Create the scatter plot with standardized variables
+plot(data$HIGH_T, data$BB_COUNT, 
+     main = "Scatter Plot with Regression", 
+     xlab = "HIGH_T", ylab = "BB_COUNT", pch=19)
+
+
+#Add the regression line to the plot
+abline(model, col = "red")
+
+#Get the coefficients of the regression equation
+coefficients <- coef(model)
+intercept <- coefficients[1]
+slope <- coefficients[2]
+
+#Add the regression equation to the plot
+#cat("ln(BB_COUNT) =", intercept, "+", pendent, "* HIGH_T\n")
+equation <- paste("Regression Equation: BB_COUNT =",round(intercept, 2), "+", round(slope, 2), " * HIGH_T")
+text(x=70, y=4460,
+     equation, 
+     col="blue")
+```
+```{r, echo=F}
+cat("We can see that there exists a positive linear correlation between these variables.")
+```
+
+#### *1.e)* Estimate the null model without predictors (BB_COUNT∼1), and also plot the equation according to this model to the plot. What do you observe?
+.
+
+```{r}
+null_model<- glm(BB_COUNT ~ 1, data = data)
+null_plot<-plot(data$BB_COUNT, ylab= "BB_count",
+     main = "Scatter Plot", pch=19)
+abline(null_model, col = "red")
+
+coefficients <- coef(null_model)
+intercept <- coefficients[1]
+slope <- coefficients[2]
+
+null_equation <- paste("Equation: BB_COUNT =", round(slope, 2), " * HIGH_T +", round(intercept, 2))
+text(x=110, y=4500,
+     null_equation, 
+     col="blue")
+```
+```{r, echo=F}
+cat("This model is characterized by an equation that remains unaffected by any variable, essentially
+representing the null model. Consequently, it produces a horizontal line, which stays consistent along the
+y-axis at the mean value. Hence, the null model is depicted as a steady line that aligns with the mean.")
+```
+
+#### *1.f)* Interpret the first model by quantifying the effect of the predictor on the average of the response. Give a 95% confidence interval for the parameter representing that effect.
+.
+
+```{r}
+
+# Calculate 95% confidence interval for the coefficient of 'High_T'
+summary(mdl_pois_reg)
+pendent <- summary(mdl_pois_reg)$coefficients[2, 1]
+standard_error <- summary(mdl_pois_reg)$coefficients[2, 2]
+z <- qnorm(0.975)
+
+upper <- pendent + z*standard_error
+lower <- pendent - z*standard_error
+
+```
+```{r, echo=F}
+cat("The 95% confidence interval is: [", lower, ",",upper, "]\n" )
+cat("Within this interval, it can be inferred that a rise of 1 unit in HIGH_T is associated with a BB_COUNT
+change falling between",lower, "and", upper)
+
+```
+
+#### *1.g)* Is the value 0 inside the interval you obtained? Is the value 1 inside the interval? What is the relevance of this?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+cat("Neither 1 nor 0 are within this interval [", lower, ",",upper, "]. We have a relationship between the variables under study. A 0 within our interval would indicate otherwise, as it would signify the multiplication of our variable by 0 when HIGH_T increases by one unit. A 1 within our interval would mean there would be no change, so it makes sense that neither 0 nor 1 are in our interval.")
+```
+
+#### *1.h)* Is there any indication that overdispersion is a problem for you model? Justify your answer.
+.
+
+```{r}
+#Overdispersion in mdl_pois_reg
+summary(mdl_pois_reg)
+# Residual deviance and the degrees of freedom
+res_dev_1 <- mdl_pois_reg$deviance
+df_1 <- mdl_pois_reg$df.residual
+
+# Calculate the overdispersion parameter
+overdispersion_1 <- res_dev_1/df_1
+```
+```{r, echo=F}
+cat("The overdispersion parameter is:", overdispersion_1, "\n\n")
+cat("We can observe that this overdispersion is nearly twice the size of the previous one. It is too large for
+us to model our data using Poisson distribution, we can say that overdispersion poses problem for our model.")
+```
+
+#### *1.i)* Formally test for overdispersion using the function dispersion test of the AER package. What is your conclusion?
+.
+
+```{r}
+dispersion_test<-dispersiontest(mdl_pois_reg)
+dispersion_test
+```
+```{r, echo=F}
+cat("The results from our test strongly support our previous calculation: there is overdispersion. This
+indicates that the variability in the data is higher than what would be expected from a Poisson
+distribution.")
+```
+
+#### *1.j)* Calculate deviance residuals according to the first model and plot these as a function of the predicted values, using a different color for each category of LABOR_YESNO. What do you observe?
+.
+
+```{r,echo=T, results='hide'}
+#Calculate residues of first model
+res<-resid(mdl_pois_reg)
+```
+```{r}
+ggplot(data, aes(x=mdl_pois_reg[["linear.predictors"]], y= res, 
+  color =as.factor(LABOR_YESNO))) + 
+  xlab("Predicted values") + ylab("Deviance Residuals") +
+  labs(color = "LABOR_YESNO") + 
+  geom_point(alpha = .8, shape = 19) + 
+  scale_color_manual(values = c("green", "black"))+theme_minimal()
+
+```
+```{r, echo=F}
+cat("This plot is highly scattered and lacks linearity. Which indicates that the data still doesn't fit the
+model.")
+```
+
+#### *1.k)* Do a Poisson regression of BB_COUNT on HIGH_T and LABOR_YESNO. Report the fitted equation. Is there evidence for any effect of the variable LABOR_YESNO? Justify your answer.
+.
+
+```{r}
+mdl_pois_reg_laboral <- glm(formula = BB_COUNT ~ HIGH_T + LABOR_YESNO,
+                          data = data, family = "poisson"(link="log"))
+summary(mdl_pois_reg_laboral)
+
+coef(mdl_pois_reg_laboral )
+intercept <- coef(mdl_pois_reg_laboral )[1]
+slope <- coef(mdl_pois_reg_laboral )[2]
+labor<-coef(mdl_pois_reg_laboral )[3]
+#Create the fitted 
+fitted_equation <- paste("Regression Equation: BB_COUNT =",round(intercept, 2),"+",round(slope, 2), " * HIGH_T ","+", round(labor, 2), "* LABOR_YESNO ")
+```
+```{r, echo=F}
+print(fitted_equation)
+```
+
+#### *1.l)* Make a graphic by representing the newly fitted model in a scatterplot of BB_COUNT against HIGH_T.
+.
+
+```{r}
+res_lab<-resid(mdl_pois_reg_laboral)
+ggplot(data, aes(x=mdl_pois_reg_laboral[["linear.predictors"]], y= res_lab, 
+  color =as.factor(LABOR_YESNO))) + geom_point()+ 
+  xlab("HIGH_T") + ylab("BB_COUNT") + labs(color = "LABOR_YESNO",
+  title="BB_COUNT vs HIGH_T with LABOR_YESNO distinction")+
+  scale_color_manual(values = c("green", "black"))+theme_minimal()
+```
+```{r, echo=F}
+
+```
+
+#### *1.m)* Is there evidence for interaction between the variables LABOR_YESNO and HIGH_T? Justify your answer. Try to make a graphical representation of the fitted model with interaction in a scatterplot of BB_COUNT against HIGH_T.
+.
+
+```{r, echo=F}
+cat("It seems that when HIGH_T is around 7.75 and 8 BB_COUNT is hgher, but there seems to be no relation
+between LABOR_YESNO and HIGH_T, it would make sense if there was no relation, as they are the temperature and
+if the day is laborable or not, wich are things we know are not related. Nevertheless, we will prove it")
+```
+```{r}
+plot(data$HIGH_T, data$LABOR_YESNO)
+model_H_lab <- lm(formula =HIGH_T ~ LABOR_YESNO, data = data)
+anova(model_H_lab, test="Chisq")
+```
+```{r, echo=F}
+cat("In the plot we can observe that they are not related, we confirm it through an anova on a lm test of
+LABOR_YESNO on HIGH_T, where we can see that they are not significant on each other, which means that they are
+not related")
+```
+
+#### *1.n)* Add the variable PRECIP to the model. Is it a significant predictor? Justify your answer.
+.
+
+```{r}
+#QUIN MODEL? ...
+mdl_pois_reg_laboral <- glm(formula = BB_COUNT ~ HIGH_T + LABOR_YESNO,
+                          data = data, family = "poisson"(link="log"))
+model <- glm(BB_COUNT ~ HIGH_T, data = data)
+mdl_pois_reg <-glm(formula = BB_COUNT ~ HIGH_T, data = data, family = poisson)  
+#provo mdl_pois_reg_laboral
+mdl_pois_reg_laboral <- glm(formula = BB_COUNT ~ HIGH_T + LABOR_YESNO + as.double(PRECIP) ,
+                          data = data, family = "poisson"(link="log"))
+summary(mdl_pois_reg_laboral)
+
+```
+```{r, echo=F}
+cat("PRECIP is a significant predictor for BB_COUNT, along with LABOR_YESNO and HIGH_T as they all are
+significant (p_value<0.05)")
+```
+
+#### *1.o)* Add the variable LOW_T to the model. Is it a significant predictor? Justify your answer.
+.
+
+```{r}
+#Mateix model q anterior, mateix error? ...
+mdl_pois_reg_laboral <- glm(formula = BB_COUNT ~ HIGH_T + LABOR_YESNO + as.double(PRECIP) + as.double(LOW_T) ,
+                          data = data, family = "poisson"(link="log"))
+summary(mdl_pois_reg_laboral)
+```
+```{r, echo=F}
+cat("LOW_T is a significant predictor for BB_COUNT, along with LABOR_YESNO, HIGH_T and PRECIP as they all are
+significant (p_value<0.05)")
+```
+
+#### *1.p)* What would be your final model for the data? Justify your answer.
+
+```{r, echo=F}
+#Mateix error q anterior ...
+cat("A model predicting BB_COUNT with all the other variables, to see if they are all significant in predicting the outcome variable ")
+```
+```{r}
+mdl_pois_reg_laboral <- glm(formula = BB_COUNT ~ HIGH_T + LABOR_YESNO + as.double(PRECIP) + as.double(LOW_T) + Date,data = data, family = "poisson"(link="log"))
+summary(mdl_pois_reg_laboral)
+```
+#### *1.q)* Give examples of outcomes that can be modelled using a Poisson regression, such as the number of goals in a handball match.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+cat("Some examples of outcomes would be:
+    Number of traffic accidents based on weather conditions.
+    Number of visits to E.R. from different causes of injury.
+    
+    ")
+```
+
+
+
+
+
+
+
+
+
+
