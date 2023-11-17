@@ -1,0 +1,263 @@
+---
+title: |
+  <center> Assignment 5 </center>
+  <center> Mixed effect models </center>
+author: "Jan Izquierdo & Ainhoa Lopez"
+date: "2023-11-14"
+output: 
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Libraries
+```{r}
+library(nlme)
+
+```
+
+
+#### *1.a)* Read the dataset into the R environment.
+.
+
+```{r}
+mixed_effect_data <-readxl::read_excel("sleepstudy.xlsx")
+mixed_effect_data
+
+sapply(mixed_effect_data, class)
+```
+
+
+#### *1.b)* Does this data have a hierarchical structure? Do you have any a priori reasons to expect that Reaction measurements could not be independent? Do you have a longitudinal data case?
+.
+
+```{r, echo=F}
+cat("The data in mixed_effect_data is nested and structured in a data frame where variables vary at one or
+more levels. Therefore, the data follows a mixed-effects model, also known as a hierarchical model, due to the
+influence of different levels on the data.
+
+The reaction of each subject is independent of the reaction of the other subjects. However, if we focus on a
+specific subject, their reaction measurements will be interrelated. Since there are different observations for
+the same subject, we can assume that there is grouping. The fact that there are repeated measurements of
+individuals over time gives us reason to expect that the reaction measurements cannot be considered
+independent.")
+```
+
+#### *1.c)* Format the data for its use by the functions of the nlme package with the instruction: X <-groupedData(Reaction~Days|Subject,data=X)
+.
+
+```{r}
+X <-groupedData(Reaction~Days|Subject,data=mixed_effect_data)
+X
+```
+
+#### *1.d)* What is the total number of subjects in the database? Is the data balanced? How many measurements were taken on each Subject at most?
+.
+
+```{r}
+number_subj <- length(unique(X$Subject))
+
+table(X$Subject)
+ES<-table(X$EducationLevel, X$Subject)
+Ed1<-table(ES[1,])
+Ed2<-table(ES[2,])
+Ed3<-table(ES[3,])
+```
+
+
+```{r, echo=F}
+cat("The total number of subjects is ", number_subj)
+cat("\nWe can see that the data is not balanced because:")
+cat("\n Education level 1:"); print(Ed1)
+cat("\n Education level 2:"); print(Ed2)
+cat("\n Education level 3:"); print(Ed3)
+cat("For education level 1 10 measurements were only done on 7 subjects, while on level 2 10 measurements were
+done on 6 subjects and on level 3 10 measurements were done on only 5 subjects")
+cat("\n\nFrom the tables we can see that the maximum mesaurements on a single subject is", max(table(X$Subject)))
+
+```
+
+
+#### *1.e)* Fit an ordinary linear regression model, with Days as the predictor and Reaction as the response. Is there a significant relationship between these two variables? How much variance of Reaction can be explained by Days?
+.
+
+```{r}
+model<-lm(Reaction~Days, data=X)
+summary(model)
+```
+
+```{r, echo=F}
+cat("There is a significant relationship, as the p-value is inferior to the default critical value 0.05")
+cat("reaction can be explained by Days in that ...")
+```
+#### *1.f)* Show the data adequately in a scatter plot by adding the relationship obtained by the regression model.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.g)* Make the standard plots for the residuals of this regression (histogram, residuals versus fitted values, residuals versus order, normal probability plot) and indicate whether you believe if the standard regression assumptions hold or not.
+.
+
+```{r}
+#Normal probability plot
+residuals <- resid(model)
+qqnorm(residuals, col = X$EducationLevel)
+qqline(residuals)
+yhat <- predict(model)
+
+
+#Histogram
+hist(residuals, breaks =25, col='lightslateblue')
+
+
+#Residuals versus fitted values
+plot(yhat, residuals, col = X$EducationLevel)
+
+```
+
+
+
+#### *1.h)* Make boxplots of the residuals for each Subject. Do you observe any problems?
+.
+
+```{r}
+boxplot(residuals ~ Subject, data = X, col = heat.colors(length(unique(X$Subject))))
+
+abline(h = 0, col = "red", lty = 2)
+
+title(main = "Boxplot of Residuals for Each Subject", xlab = "Subject", ylab = "Residuals")
+```
+
+
+```{r, echo=F}
+
+```
+#### *1.i)* Separate regressions for each Subject using the lmList instruction, and create all 95% confidence intervals for the intercepts and the slopes, using the intervals function. Display all intervals in a graph. Do you think intercepts and slopes vary significantly across Subjects? What model do the graphs suggest you?
+.
+
+```{r}
+output <- lmList(X)
+M <- coefficients(output)
+
+boxplot(M[,1], main = "Intercepts")
+boxplot(M[,2], main = "Slopes")
+
+#95% confidence interval
+inter <- intervals(lmList(X))
+inter
+plot(inter)
+
+```
+
+#### *1.k)* Compare the ordinary regression model with the random intercept model using a likelihood ratio test (LRT). Which model fits the data better?
+.
+
+```{r}
+random_imodel <- glm(A~B, data = X)
+lr_test <- lrtest(model, random_imodel)
+print(lr_test)
+```
+
+
+
+```{r}
+
+
+```
+#### *1.l)* Give the value of the corresponding LR test statistic, its reference distribution and the p-value.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.m)* Fit an ordinary regression model (with lm) using EducationLevel as the sole predictor for Reaction. Is there evidence for an effect of EducationLevel on Reaction? Which EducationLevel/s has/d the highest levels of Reaction?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.n)* Fit now a random intercept model with EducationLevel as the sole predictor. Does this fit the data better than a model with no random intercept?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.o)* Fit a mixed model with random intercept for Reaction, using both predictors, Days and EducationLevel. How many parameters has this model? Are all terms significant?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.p)* Fit a new model with random slope effects for both Days and EducationLevel. Does this fit the data better than a model without random slopes?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.q)* Investigate the residuals of this model of your by making some plots you consider adequate. Comment on your results.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.r)* What would be your final model for the data? Justify your answer.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.s)* What would be your next step in the analysis of this data set? Comment your suggestion.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.t)* Give examples of outcomes that can be modelled using mixed models, longitudinal, hierarchical, cluster, and repeated measurements are possible options.
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+#### *1.u)* How can we extend the linear model regression to a generalized linear model? Which library and function in R can be used to fit a generalized linear model?
+.
+
+```{r}
+
+```
+```{r, echo=F}
+
+```
+
