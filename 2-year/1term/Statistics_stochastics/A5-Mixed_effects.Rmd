@@ -8,22 +8,23 @@ output:
   pdf_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 Libraries
 ```{r}
 library(nlme)
 
+library(lmtest)
+
+library(lme4)
+
+#library(broom)
+
 ```
 
 
 #### *1.a)* Read the dataset into the R environment.
-.
-
-```{r}
-mixed_effect_data <-readxl::read_excel("sleepstudy.xlsx")
+```{r, results=F}
+mixed_effect_data <-readxl::read_excel("./Assignment-data/sleepstudy_fixed.xlsx")
 mixed_effect_data
 
 sapply(mixed_effect_data, class)
@@ -50,7 +51,7 @@ independent.")
 
 ```{r}
 X <-groupedData(Reaction~Days|Subject,data=mixed_effect_data)
-X
+reaction <- as.numeric(X$Reaction)
 ```
 
 #### *1.d)* What is the total number of subjects in the database? Is the data balanced? How many measurements were taken on each Subject at most?
@@ -96,9 +97,12 @@ cat("reaction can be explained by Days in that ...")
 .
 
 ```{r}
-
+plot(X$Days, X$Reaction, main = "Scatter Plot with Regression Line", 
+     xlab = "Days", ylab = "Reaction")
+abline(model, col = "orange")
 ```
-```{r, echo=F}
+
+```{r}
 
 ```
 #### *1.g)* Make the standard plots for the residuals of this regression (histogram, residuals versus fitted values, residuals versus order, normal probability plot) and indicate whether you believe if the standard regression assumptions hold or not.
@@ -134,94 +138,174 @@ abline(h = 0, col = "red", lty = 2)
 title(main = "Boxplot of Residuals for Each Subject", xlab = "Subject", ylab = "Residuals")
 ```
 
-
-```{r, echo=F}
-
-```
 #### *1.i)* Separate regressions for each Subject using the lmList instruction, and create all 95% confidence intervals for the intercepts and the slopes, using the intervals function. Display all intervals in a graph. Do you think intercepts and slopes vary significantly across Subjects? What model do the graphs suggest you?
 .
 
 ```{r}
-output <- lmList(X)
+output <- lmList(Reaction ~ Days | Subject, data = X)
 M <- coefficients(output)
 
 boxplot(M[,1], main = "Intercepts")
 boxplot(M[,2], main = "Slopes")
 
 #95% confidence interval
-inter <- intervals(lmList(X))
+inter <- intervals(output)#This can not work due to a bug that causes intervals to not use intervals.lmList
 inter
 plot(inter)
 
+
 ```
+```{r}
+cat("e")
+```
+
+###*1.j)* Fit a random intercept model to the data with lme. Use the output to obtain an estimate of the intraclass correlation coefficient. Do you think observations are independent? 
+
+```{r}
+random_intercept_model<-lme(reaction~Days, random = ~1 | Subject, data = X)
+summary(random_intercept_model)
+variance<-  VarCorr(random_intercept_model)
+sigma<- random_intercept_model$sigma
+variance_total<- sigma^2  + var(fitted(random_intercept_model))
+intraclasscor <- sigma^2/ variance_total
+
+```
+```{r, echo=F}
+cat("We think there are  a significant relation because the p_values",summary(random_intercept_model)$tTable[, "p-value"], "are smaller
+than the critical value 0.05 and the ICC is bigger than 0.5, this suggests substantial proportion of variability between groups" )
+cat("Intraclass Correlation Coefficient (ICC):", intraclasscor, "\n")
+
+```
+
 
 #### *1.k)* Compare the ordinary regression model with the random intercept model using a likelihood ratio test (LRT). Which model fits the data better?
 .
 
 ```{r}
-random_imodel <- glm(A~B, data = X)
-lr_test <- lrtest(model, random_imodel)
+lr_test <- lrtest(model, random_intercept_model)
 print(lr_test)
 ```
 
 
 
 ```{r}
-
+cat("The model that fits the data better is")
 
 ```
 #### *1.l)* Give the value of the corresponding LR test statistic, its reference distribution and the p-value.
 .
 
 ```{r}
-
+lr_test
+t_stat<-lr_test$Chisq
+ref_dist<-"..."
+p_value<-lr_test$`Pr(>Chisq)`
 ```
 ```{r, echo=F}
-
+cat("The value corresponding to the LR test statistic is ", t_stat)
+cat("The value reference distribution is", ref_dist)
+cat("The p-value is", p_value)
 ```
+
 #### *1.m)* Fit an ordinary regression model (with lm) using EducationLevel as the sole predictor for Reaction. Is there evidence for an effect of EducationLevel on Reaction? Which EducationLevel/s has/d the highest levels of Reaction?
-.
+```{r}
+model2<- lm(reaction~EducationLevel, data = X)
+summary(model)
+```
 
 ```{r}
+coe_model2<- coef(model2)
+coe_model2
+hip_test<- anova(model2)
+hip_test
+```
+
+
+```{r}
+plot(X$EducationLevel, reaction, main = "plot regresion line ",
+     xlab = "EducationLevel ", ylab = "reaction")
+abline(model2, col = "red")
 
 ```
-```{r, echo=F}
+```{r}
+cat(" ")
 
 ```
+
 #### *1.n)* Fit now a random intercept model with EducationLevel as the sole predictor. Does this fit the data better than a model with no random intercept?
-.
 
 ```{r}
+no_random_intercept <- lm(reaction ~ EducationLevel, data = X)
+random_intercept <- lmer(reaction ~ EducationLevel + (1|Subject), data = X)
+
+lr_test2 <- anova(random_intercept,no_random_intercept) 
+lr_test2
 
 ```
-```{r, echo=F}
+
+
+```{r}
+cat("Looking at the BIC/AIC, we observe that the random intercept model has a better fit to the data (has the smallest value).\n")
 
 ```
 #### *1.o)* Fit a mixed model with random intercept for Reaction, using both predictors, Days and EducationLevel. How many parameters has this model? Are all terms significant?
 .
 
 ```{r}
+mixed_model_random <- lmer(reaction ~ Days + EducationLevel +(1|Subject), data = X)
+mixed_model_random
+
 
 ```
+```{r}
+summary_model <- summary(mixed_model_random)
+p_values <- summary_model$coefficients[, "t value"]
+p_values
+
+```
+
+
 ```{r, echo=F}
+cat("We have 3 fixed effects (intercept, days, and EducationLevel) and 1 random effect (Subject).\n")
+
+cat("To determine if the fixed effects are significant, we look at the p-values. Our p-values for the intercept and days are < 0.05, so they are considered statistically significant. However, our p-value for EducationLevel is > 0.05, indicating that it is not statistically significant.\n")
 
 ```
 #### *1.p)* Fit a new model with random slope effects for both Days and EducationLevel. Does this fit the data better than a model without random slopes?
 .
 
 ```{r}
+random_model_slope <- lmer(reaction ~ Days + EducationLevel + (Days + EducationLevel | Subject), data = X)
+
+
+no_random_model_slope <- lmer(reaction ~ Days + EducationLevel + (1 | Subject), data = X)
+
+
+anova_results <- anova(no_random_model_slope, random_model_slope)
+anova_results
 
 ```
-```{r, echo=F}
-
+```{r}
+cat("Looking at the BIC/AIC, we observe that the random intercept model has a better fit to the data (has the smallest value).\n")
 ```
+
 #### *1.q)* Investigate the residuals of this model of your by making some plots you consider adequate. Comment on your results.
 .
 
 ```{r}
+res<-resid(random_model_slope)
+random_effects <- ranef(random_model_slope)
+plot(X$Days, res + random_effects$Subject[, "Days"], xlab = "Days", ylab = "Residuals",
+     main = "Days vs Residuals", col=heat.colors(length(unique(X$EducationLevel))))
+plot(X$EducationLevel, res + random_effects$Subject[, "EducationLevel"], 
+     xlab = "EducationLevel", ylab = "Residuals", main = "EducationLevel vs Residuals")
+
+#...
 
 ```
-```{r, echo=F}
+
+
+```{r}
 
 ```
 #### *1.r)* What would be your final model for the data? Justify your answer.
@@ -230,7 +314,9 @@ print(lr_test)
 ```{r}
 
 ```
-```{r, echo=F}
+
+
+```{r}
 
 ```
 #### *1.s)* What would be your next step in the analysis of this data set? Comment your suggestion.
@@ -239,25 +325,30 @@ print(lr_test)
 ```{r}
 
 ```
-```{r, echo=F}
+
+```{r}
 
 ```
 #### *1.t)* Give examples of outcomes that can be modelled using mixed models, longitudinal, hierarchical, cluster, and repeated measurements are possible options.
 .
 
-```{r}
-
-```
 ```{r, echo=F}
+cat("Examples:
+Mixed models: Tracking performance of students in different subjects over several semesters in multiple schools
+Longitudinal model:Predict cardiovascular disease risk
+Hierarchical model:  Examination on factors that influence health trajectories for individuals across age
+Cluster model: Identify groups of households that are similar to each other in retail spending.
+Repeated measurements model: Analysis of drug efficacy in patients over multiple treatments
+")
 
 ```
+
 #### *1.u)* How can we extend the linear model regression to a generalized linear model? Which library and function in R can be used to fit a generalized linear model?
 .
 
-```{r}
-
-```
 ```{r, echo=F}
+cat("You can extend a linear regression model to a generalized linear model using the glm() function. The library is the base R library")
 
 ```
+
 
