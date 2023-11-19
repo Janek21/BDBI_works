@@ -10,6 +10,7 @@ output:
 
 ```{r, include=F, results=F, echo=F}
 #to convert to pdf
+#library(rmarkdown)
 #render("A5-Mixed_effects.Rmd", "pdf_document")
 ```
 
