@@ -173,8 +173,8 @@ print(res)
 ```
 ```{r, echo=F}
 cat("The result of the log likelihood is", res)
-cat("Because in the formula we used the fraction in this format SARS-Cov-2/RaTG13
-and", res, "<0 we can assume that the sequence does not belong to SARS-Cov-2, so it is from RaTG13")
+cat("Because in the formula we used the fraction in this format SARS-Cov-2/RaTG13 and", res, "<0 
+we can assume that the sequence does not belong to SARS-Cov-2, so it is from RaTG13")
 ```
 
 
