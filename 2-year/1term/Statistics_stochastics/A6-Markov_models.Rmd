@@ -1,0 +1,221 @@
+---
+title: "Markov Models"
+author: "Jan Izquierdo & David Marquez"
+date: "2023-11-25"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setting libraries and importing data
+```{r}
+library(seqinr)
+```
+
+
+#### *1.* Download the genome of SARS-Cov-2 sequenced in Catalonia in 15/03/2020, accession number MT359865, and the genome of the virus RaTG13 of the bats Rhinolophus afinis, accession number MN996532.
+.
+
+```{r}
+s_data<-read.fasta("./assignment_data/SARSCov2.fasta")
+r_data<-read.fasta("./assignment_data/RaTG13.fasta")
+```
+
+#### *2.* Calculate the frequency of each nucleotide for each virus and draw Bar Plots. Which nucleotide is more frequent? Calculate the GC content and the AT content. Note that you have fitted the sequences to multinomial models: compute their BIC statistics.
+.
+
+```{r}
+sars<-s_data[[1]]
+ratg<-r_data[[1]]
+sars_freq<-table(sars)/length(sars)
+ratg_freq<-table(ratg)/length(ratg)
+
+GC_sars <- GC(sars)
+GC_ratg <- GC(ratg)
+AT_sars <- 1-GC_sars
+AT_ratg <- 1-GC_ratg
+
+combined_freq<-t(cbind(sars_freq, ratg_freq))
+
+barplot(combined_freq, beside=T, col=c("orange","darkgreen"), legend.text = c("ratg", "sars"))
+```
+```{r, echo=F}
+cat("The GC content of SARS-Cov-2 is", GC_sars)
+cat("The AT content of SARS-Cov-2 is", AT_sars)
+cat("The GC content if RaTG13 is", GC_ratg)
+cat("The AT content if RaTG13 is", AT_ratg)
+```
+
+
+#### *3.* Do a sliding window analysis of the GC content for each virus, that is, to study the variation in GC content within the genome sequence:
+.
+
+#### Calculate the GC content of chunks with length 200 (window size=200) and plot the resulting frequencies
+.
+
+```{r}
+x=200
+c=1
+s=sars
+n=length(sars)
+y=200
+sars_gccount=c()
+i=1
+while (x<=n){
+	sars_gccount[i]<-GC(s[c:x]) #gc included function that calculates "g" "c" frequencies in chunk
+	c=c+y
+	x=x+y
+	i=i+1
+}
+
+x=200
+c=1
+s=ratg
+n=length(ratg)
+y=200
+ratg_gccount=c()
+i=1
+while (x<=n){
+	ratg_gccount[i]<-GC(s[c:x]) #gc included function that calculates "g" "c" frequencies in chunk
+	c=c+y
+	x=x+y
+	i=i+1
+}
+ts.plot(sars_gccount, col="green")
+ts.plot(ratg_gccount, col="purple")
+combined_gcccount<-(cbind(sars_gccount, ratg_gccount))
+ts.plot(combined_gcccount, col=c("green", "purple"))
+```
+
+#### *4.* Compute the number of occurrences of the dinucleotides for each virus. Which are over or under-represented?
+.
+
+```{r}
+s_c<-count(sars, 2)
+r_c<-count(ratg, 2)
+s_z<-zscore(sars, model="base")
+r_z<-zscore(ratg, model="base")
+```
+```{r, echo=F}
+cat("Dincucleotides for SARS-Cov-2:"); print(s_c)
+cat("Dinucleotides for RaTG13:");print(r_c)
+print(s_z)
+cat("AA, AC, CA, CT, GC, GT, TG and TT are over-represented, all others are under-represented")
+print(r_z)
+cat("AA, AC, CA, CT, GC, GT, TG and TT are over-represented, all others are under-represented")
+```
+
+#### *5.* Fit both sequences to Markov chain models. Estimate their transition probability matrices. Compute the BIC of the models and find the steady-state (or limiting) distributions.
+.
+
+```{r}
+sars_m=matrix(s_c, 4, 4, byrow=T, dimnames=list(c("A", "C", "G", "T"), c("A", "C", "G", "T")))
+sars_matrix<-sars_m[,]/(sars_m[,1]+sars_m[,2]+sars_m[,3]+sars_m[,4])
+ratg_m=matrix(r_c, 4, 4, byrow=T, dimnames=list(c("A", "C", "G", "T"), c("A", "C", "G", "T")))
+ratg_matrix<-ratg_m[,]/(ratg_m[,1]+ratg_m[,2]+ratg_m[,3]+ratg_m[,4])
+
+sars_limiting_matrix <- sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix%*%sars_matrix
+
+ratg_limiting_matrix <- ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix%*%ratg_matrix
+
+```
+```{r, echo=F}
+cat("The limiting distribution for SARS-Cov-2 is \n"); print(sars_limiting_matrix)
+cat("The limiting distribution for RaTG13 is \n"); print(ratg_limiting_matrix)
+
+```
+
+
+#### *6.* Fit both sequences to second order Markov chain models, compute their BIC and compare the results with those obtained in 5. Which models are better?
+.
+
+```{r}
+sars_n=length(sars)-2; par=48
+sars_c=sars_m
+sars_p=sars_c[,]/(sars_c[,1]+sars_c[,2]+sars_c[,3]+sars_c[,4])
+sars_BIC=-2*sum(sars_c*log(sars_p))+par*log(sars_n)
+
+ratg_n=length(ratg)-2; par=48
+ratg_c=ratg_m
+ratg_p=ratg_c[,]/(ratg_c[,1]+ratg_c[,2]+ratg_c[,3]+ratg_c[,4])
+ratg_BIC=-2*sum(ratg_c*log(ratg_p))+par*log(ratg_n)
+```
+```{r, echo=F}
+cat("The BIC for SARS-Cov-2 is", sars_BIC)
+cat("The BIC for RaTG13 is", ratg_BIC)
+
+```
+
+#### *7.* Consider the following fragment of a DNA sequence: "g" "t" "g" "t" "g" "c" "t" "c" "a" "g" "t" "t" "g" "a" "a" "a" "a" "t" "c" "c" "c" "t" "t" "g" "t" "c" "a" "a" "c" "a" "t" "c" "t" "a" "g" "g" "t" "c" "t" "t" "a" "t" "c" "a" "c" "a" "t" "c" "a" "c" "a"
+
+#### Decide using the log-likelihood method to which virus this sequence belongs, SARS-Cov_2 or RaTG13.
+.
+
+```{r}
+u_seq <- c("g","t","g","t","g","c","t","c","a","g","t","t","g","a","a","a","a","t"
+         ,"c","c","c","t","t","g","t","c","a","a","c","a","t","c","t","a","g",
+         "g","t","c","t","t","a","t","c","a","c","a","t","c","a","c","a")
+nucleotides<-c('a'=1, 'c'=2, 'g'=3, 't'=4)
+
+res=c()
+for (i in seq(length(u_seq)-1)){
+  current_nuc<-nucleotides[u_seq[i]]
+  f_nuc=nucleotides[u_seq[i+1]]
+  res[i]=log(sars_matrix[current_nuc, f_nuc] / ratg_matrix[current_nuc, f_nuc])
+}
+res=(sum(res))
+print(res)
+```
+```{r, echo=F}
+cat("The result of the log likelihood is", res)
+cat("Because in the formula we used the fraction in this format SARS-Cov-2/RaTG13
+and", res, "<0 we can assume that the sequence does not belong to SARS-Cov-2, so it is from RaTG13")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
