@@ -22,8 +22,8 @@ library(seqinr)
 .
 
 ```{r}
-s_data<-read.fasta("./assignment_data/SARSCov2.fasta")
-r_data<-read.fasta("./assignment_data/RaTG13.fasta")
+s_data<-read.fasta("./assignment_data/A6_SARSCov2.fasta")
+r_data<-read.fasta("./assignment_data/A6_RaTG13.fasta")
 ```
 
 #### *2.* Calculate the frequency of each nucleotide for each virus and draw Bar Plots. Which nucleotide is more frequent? Calculate the GC content and the AT content. Note that you have fitted the sequences to multinomial models: compute their BIC statistics.

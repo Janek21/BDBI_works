@@ -32,7 +32,7 @@ Setting libraries and some variables
 
 ```{r setting the scene}
 library("ggplot2")
-db<-read.table("./Assignment_data/A1_MLE.dat")
+db<-read.table("./assignment_data/A1_MLE.dat")
 m<-mean(db$V1)
 sd1<-sd(db$V1)
 variance<-var(db$V1)

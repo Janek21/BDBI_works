@@ -32,7 +32,7 @@ library("readxl")
 Setting up variables
 
 ```{r}
-db<-read.table("./Assignment_data/A2-LRT.txt")
+db<-read.table("./assignment_data/A2-LRT.txt")
 n<-length(db$V1)
 ```
 

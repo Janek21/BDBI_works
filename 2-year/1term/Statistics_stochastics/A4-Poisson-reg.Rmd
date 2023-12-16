@@ -29,7 +29,7 @@ library(AER)
 .
 
 ```{r}
-data<-read_excel("./assignment_data/bicyclist_data.xls")
+data<-read_excel("./assignment_data/A4_PR.xls")
 n<-nrow(data)
 n
 ```

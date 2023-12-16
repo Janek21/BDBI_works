@@ -37,7 +37,7 @@ library(ggplot2)
 .
 
 ```{r}
-mixed_effect_data <-readxl::read_excel("./Assignment-data/sleepstudy_fixed.xlsx")
+mixed_effect_data <-readxl::read_excel("./Assignment-data/A5_MM.xlsx")
 sapply(mixed_effect_data, class)
 ```
 #### *1.b)* Does this data have a hierarchical structure? Do you have any a priori reasons to expect that Reaction measurements could not be independent? Do you have a longitudinal data case?

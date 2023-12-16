@@ -1,0 +1,115 @@
+Xerrada Arcadi Navarro
+European Genome-phenome Archive
+
+1.Big Data & Genomic Big Data
+2.Genomic Data
+3.The sharing Dilemma
+4.What is EGA for?
+5.Beacon
+6.EGA federation
+
+
+1.
+	What is Big Data?
+	Until 2003 5billion gygabites
+	IN 2011 this data  every 2 days
+	2013 every 10 minutes
+	2020 1.7MB every second per person >1exabyte/minute
+	2025 >175zetabytes of data
+	LOTSA DATTA
+	
+	90% of the data in the world today has been created in less than a year: climate info, ad products, etc --> BIG DATA!
+	A fraction of these belongs to Medical Genomics
+	
+	The sequencing of the genome has revolutionized the medical and informative field, as it has generated massive amounts of data(prompting an 		innovation in research equipment and informatics a a whole) and this data has allowed better comprehension of the human genome and human diseases
+	
+2.
+	Multiple genomes in a database(1000 genomes)
+	Data acces model to 1000 genomes
+	Accumulation of human data
+		Using all these advances any data relevant for human health has been accumulated.GWAS as an example
+	Can be used for
+		disease vs ctrl
+			cross reference genomes and phenomes to find causes of disease in genes
+	GWAS is used to link genetic variant and diseases (disease vs control tests and a lot of referencing)
+	
+	Info from genomic is a lot, very heavy, CERN and other generators of atomic data genereate much less data.
+	Genomics generate a lot of heavy data, this is why bioinformatics is important
+
+3.
+	In medical genomics: "We will only use your data for reasearch purposes"
+	Human rights problem with genomics info
+		Private Identifying Information needs to be confidential
+		Generated with taxpayer money -> INformation needs to be publics
+	What do we do? 
+		Accord for data generation and archivation:
+	4 pillars for data to follow
+		Findable
+		A
+		I
+		R
+
+4.
+	EGA -> keeps raw, not FAIR data, "data finders" is sent to them
+		If someone needs data, they ask EGA for it, EGA confirms or denies the request in basis of what they can find of who asks for it (they gonna use it for reasearch? what research?)
+		You ask for data from 5 countries they deliver it, they talk with info providers
+		
+		Acces is controlled by Data Access Comitees(DAC)
+		
+		Data generators give to EGA, they give to who asks for it and can be proven trusworthy, researcher signs agreement to use it with same conditions as the one who submitted the data
+		
+		You can use EGA data from another country legally(if laws mandate to be in that country) by API and similar structures (connections straight to other contry by user to avoid legal troubles in some countries)
+		
+		
+		EGA is free worldwide permanent secure archive of genomic dat
+		15000 datasets
+		3500 DACs
+		17 petabytes of data
+		
+	EGA is international, similar Japanese and American databases are not
+	
+	EGA is part on an international ecosystem
+	Global Alliance for Genomics and Health
+		Aims to accelerate progress in genomic research and human health by cultivating a common framework of standards and harmonized data 
+		Unifies the standards for genomic info storage to organize global data and to be able to draw conclusions
+		
+5.
+	Can be used as a beacon
+	Researcher: Do you have a dataset with a male individual with a C in chr13 pos~~~? 
+		Yes: access is trammited 
+		No: moves on
+	
+	I want x data:
+		Ask for data from database:
+			Verification for database, lot of bureucracy
+			How do I know if I want the data? 
+				It can be useless
+		
+		Small queries without indentification: ask simple features and YES or NO
+			To know if you are interested in formally applying for access to the data
+			If that database doesen't have microquery it can redirect user to other beacons that do have it
+			L78 -> No; redirects to other
+		
+	small VCF files(can be downloaded) can be used as beacons
+	Local beacon network: Across catalan hospitals to start EGA network
+	
+6.
+	Fedarated EGA: fedarated sharing of sensitive human data
+		many institutions working together
+	1+ Million Genomes treaty in EU
+	have " genomes from all across Europe in a database by 2022 (NO cuz pandemic)
+	
+	Spain had not invested in health, but had some bioinformatics enthusiasts, so due to this bioinfo team Spain became central to Genomis in EU
+	European Genomics Infrastructure created for ^^, based on EGA
+
+
+	At the moment EGA network is catalan
+	Joining EGA nework
+
+
+
+EGA is rn catalan genomics sharing network
+being brought european/international
+Spain and Portugal are joining, more to come
+Canada, Australia, Argentina, Finland and many others are thinking about joining
+
