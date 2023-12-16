@@ -1,0 +1,12 @@
+1.What is the role of entropy in the functioning of
+an Stirling engine?
+
+2. Do you think this engine can run forever from the
+heat of a cup of hot water? Why?
+
+3. If we put the engine in a very hot room, do you
+think it will be able to run using the heat of a cup
+of hot water? Why?
+
+4. Do you think this engine can run using a source of
+cold instead of a source of heat? Why?

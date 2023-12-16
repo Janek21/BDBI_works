@@ -1,0 +1,13 @@
+str -> int : stoi()
+str -> chr :
+vector <char> i
+str S = "TAAT"
+for (char i : s){
+    i.push_back(i)
+}
+ char a = S[0]
+ 
+int -> str : str a = to_string(1)
+int -> chr : char i = 1 - '0'
+chr -> int : char a = '1'; int i = a + '0'
+chr -> str : 
