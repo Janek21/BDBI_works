@@ -1,3 +1,6 @@
 [submodule "2-year/1term/Biophysics/Final_project/JanI_Jaume_Joan_David"]
 	path = 2-year/1term/Biophysics/Final_project/JanI_Jaume_Joan_David
 	url = https://github.com/Janek21/Bioinformatics2023-Biophysics-Energy_analysis
+[submodule "2-year/2term"]
+	path = 2-year/2term
+	url = https://github.com/Janek21/Bioinfo_share_2Y_2T
