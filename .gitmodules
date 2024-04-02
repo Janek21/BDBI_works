@@ -4,3 +4,6 @@
 [submodule "2-year/2term"]
 	path = 2-year/2term
 	url = https://github.com/Janek21/Bioinfo_share_2Y_2T
+[submodule "2-year/3term"]
+	path = 2-year/3term
+	url = https://github.com/Janek21/Bioinfo_share_2Y_3T
