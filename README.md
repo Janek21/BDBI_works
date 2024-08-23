@@ -18,7 +18,7 @@ Once you have github desktop installed
 ##### Commit regularly, Before commiting: fetch>pull>commit>push
 
 
-##### <span style="color:green">For any questions or suggestions use the discussion page</span>
+##### <span style="color:darkgreen">For any questions or suggestions use the discussion page</span>
 
 
 ###### In using this repository you agree to use it responsibly, in a controlled and moderated way and to not share it unless with explicit permission from the owner.
