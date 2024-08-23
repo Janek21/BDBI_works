@@ -18,7 +18,6 @@ Once you have github desktop installed
 ##### Commit regularly, Before commiting: fetch>pull>commit>push
 
 <br>
-<br>
 
 ##### For any questions or suggestions use the discussion page
 
