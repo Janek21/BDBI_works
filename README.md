@@ -19,7 +19,7 @@ Once you have github desktop installed
 
 <br>
 
-##### For any questions or suggestions use the discussion page
+#### For any questions or suggestions use the discussion page
 
 
 ###### In using this repository you agree to use it responsibly, in a controlled and moderated way and to not share it unless with explicit permission from the owner.
