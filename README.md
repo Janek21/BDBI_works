@@ -15,11 +15,13 @@ Once you have github desktop installed
   Clone repository https://github.com/Janek21/Bioinfo_share to local
 #### Managed by: Janek21
 
+##### Commit regularly, Before commiting: fetch>pull>commit>push
 
+<br>
+<br>
 
 ##### For any questions or suggestions use the discussion page
 
-##### Commit regularly, Before commiting: fetch>pull>commit>push
 
 ###### In using this repository you agree to use it responsibly, in a controlled and moderated way and to not share it unless with explicit permission from the owner.
 ###### The collaborators and creators of this repository are not resposible for plagiarism that may stem from its existence
