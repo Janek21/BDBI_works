@@ -1,10 +1,10 @@
-# Bioinfo_share
+# Bachelors degree in bioinformatics
 
-This repository is to be used for sharing and working in community in projects and assignments
+This repository is to be used for working in community in projects and assignments
 
 ## Github desktop for linux
 
-Make it easier to commit and stuff:
+Make it easier to commit and edit:
 Download .deb of lastest version
 https://github.com/shiftkey/desktop/releases
 and follow instructions
@@ -12,7 +12,7 @@ https://www.linuxcapable.com/how-to-install-github-desktop-on-ubuntu-linux/
 
 ## Instruccions
 Once you have github desktop installed
-  Clone repository https://github.com/Janek21/Bioinfo_share to local
+  Clone repository https://github.com/Janek21/BDBI_works to local
 #### Managed by: Janek21
 
 ##### Commit regularly, Before commiting: fetch>pull>commit>push
